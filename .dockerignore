@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+data
+.session
+*.session
+.env
+.env.*
+.git
+.gitignore
+Dockerfile
+.dockerignore
+docker-compose.yml
+*.md
+START.txt

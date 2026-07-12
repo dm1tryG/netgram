@@ -1,0 +1,17 @@
+services:
+  netgram:
+    build: .
+    container_name: netgram
+    ports:
+      - "3000:3000"
+    # Credentials are entered in the setup wizard (stored in ./data). Power users
+    # may instead drop a .env with TG_API_ID / TG_API_HASH / TG_PHONE — optional.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - NETGRAM_DATA_DIR=/data
+    # Persists the Telegram session, allowlist and drafts across restarts.
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
