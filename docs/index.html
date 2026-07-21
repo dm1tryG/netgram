@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NetGram — the Telegram MCP that doesn't YOLO your account</title>
+<meta name="description" content="Self-hosted, permissioned Telegram access for AI agents. Per-chat access levels, human-in-the-loop approval for anything that leaves your account. Runs locally in Docker." />
+<meta property="og:title" content="NetGram — the Telegram MCP that doesn't YOLO your account" />
+<meta property="og:description" content="Least-privilege, human-in-the-loop Telegram access for AI agents. Self-hosted, per-chat permissions, drafts you approve." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://netgram.dm1tryg.dev" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{
+    --bg:#0a0c11;
+    --bg-2:#0e1119;
+    --panel:#12161f;
+    --panel-2:#161b26;
+    --line:#232a38;
+    --line-2:#2c3547;
+    --ink:#eef2f8;
+    --muted:#98a3b6;
+    --faint:#6b7688;
+    --accent:#2ea6ff;
+    --accent-2:#5ec2ff;
+    --green:#3ddc84;
+    --amber:#ffb454;
+    --danger:#ff6b6b;
+    --radius:14px;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 78% -8%, rgba(46,166,255,.14), transparent 60%),
+      radial-gradient(700px 500px at 8% 4%, rgba(61,220,132,.06), transparent 55%);
+    background-repeat:no-repeat;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  code,kbd{font-family:var(--mono)}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);
+    background:rgba(10,12,17,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:20px;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:linear-gradient(135deg,var(--accent),var(--green));
+    box-shadow:0 0 14px rgba(46,166,255,.6)}
+  .navlinks{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:14px;color:var(--muted)}
+  .navlinks a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;
+    padding:10px 16px;font-weight:600;font-size:14px;border:1px solid var(--line-2);
+    transition:.15s ease;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#1f8fe6);border-color:transparent;color:#04121f}
+  .btn-primary:hover{box-shadow:0 8px 24px rgba(46,166,255,.28)}
+  @media(max-width:640px){.navlinks a:not(.btn){display:none}}
+
+  /* hero */
+  header.hero{padding:84px 0 40px}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);
+    border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:999px;margin-bottom:26px}
+  .pill .g{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  h1{font-size:clamp(34px,6vw,60px);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;font-weight:800}
+  h1 .hl{background:linear-gradient(120deg,var(--accent-2),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(17px,2.3vw,21px);color:var(--muted);max-width:640px;margin:0 0 32px}
+  .lede b{color:var(--ink);font-weight:600}
+  .cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .ghline{color:var(--faint);font-size:13px;font-family:var(--mono)}
+
+  /* terminal card */
+  .term{margin-top:52px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    background:var(--panel);box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+  .term .bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .term .bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .term .bar i:nth-child(1){background:#ff5f57}.term .bar i:nth-child(2){background:#febc2e}.term .bar i:nth-child(3){background:#28c840}
+  .term .bar span{margin-left:8px;color:var(--faint);font-size:12.5px;font-family:var(--mono)}
+  .term pre{margin:0;padding:22px 20px;font-family:var(--mono);font-size:13.5px;line-height:1.75;overflow-x:auto;color:#cfd8e6}
+  .c-com{color:var(--faint)}.c-cmd{color:var(--accent-2)}.c-ok{color:var(--green)}.c-warn{color:var(--amber)}.c-key{color:#c792ea}
+
+  /* sections */
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  h2{font-size:clamp(26px,4vw,38px);letter-spacing:-.03em;margin:0 0 14px;font-weight:800}
+  .sub{color:var(--muted);max-width:640px;margin:0 0 36px;font-size:17px}
+
+  /* compare table */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+  th,td{padding:15px 18px;text-align:left;border-bottom:1px solid var(--line)}
+  thead th{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.01em}
+  thead th.ng{color:var(--accent)}
+  tbody tr:last-child td{border-bottom:0}
+  td.feat{color:var(--muted)}
+  td.typ{color:var(--faint)}
+  td.ng{color:var(--ink);font-weight:600}
+  .yes{color:var(--green)}.no{color:var(--danger)}
+
+  /* permission ladder */
+  .ladder{display:grid;gap:14px}
+  .lvl{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:center;
+    border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:var(--panel);transition:.15s}
+  .lvl:hover{border-color:var(--line-2)}
+  .lvl .tag{font-family:var(--mono);font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:9px}
+  .lvl .tag::before{content:"";width:9px;height:9px;border-radius:50%}
+  .lvl.off .tag::before{background:var(--faint)}.lvl.off .tag{color:var(--faint)}
+  .lvl.read .tag::before{background:var(--accent)}.lvl.read .tag{color:var(--accent-2)}
+  .lvl.write .tag::before{background:var(--amber)}.lvl.write .tag{color:var(--amber)}
+  .lvl.full .tag::before{background:var(--green)}.lvl.full .tag{color:var(--green)}
+  .lvl p{margin:0;color:var(--muted);font-size:15px}
+  .lvl p b{color:var(--ink);font-weight:600}
+  @media(max-width:520px){.lvl{grid-template-columns:1fr;gap:6px}}
+
+  /* feature grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .card{border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:var(--panel);transition:.15s}
+  .card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  .card .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:14px;
+    background:rgba(46,166,255,.12);border:1px solid rgba(46,166,255,.25);font-size:19px}
+  .card h3{margin:0 0 6px;font-size:16.5px;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+
+  /* tools */
+  .tools{display:grid;gap:10px}
+  .tool{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:14px 18px;border:1px solid var(--line);
+    border-radius:11px;background:var(--panel);align-items:baseline}
+  .tool code{color:var(--accent-2);font-size:14px}
+  .tool span{color:var(--muted);font-size:14.5px}
+  @media(max-width:560px){.tool{grid-template-columns:1fr;gap:4px}}
+  .note{margin-top:18px;padding:16px 18px;border-left:3px solid var(--green);background:var(--panel-2);
+    border-radius:0 10px 10px 0;color:var(--muted);font-size:14.5px}
+  .note b{color:var(--ink)}
+
+  /* diagram */
+  .diagram{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:26px 22px;overflow-x:auto}
+  .diagram pre{margin:0;font-family:var(--mono);font-size:13px;line-height:1.9;color:var(--muted);white-space:pre}
+  .diagram .hi{color:var(--accent-2)}.diagram .g{color:var(--green)}
+
+  /* cta band */
+  .band{border:1px solid var(--line);border-radius:18px;padding:48px 36px;text-align:center;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));margin-top:8px}
+  .band h2{margin-bottom:10px}
+  .band p{color:var(--muted);max-width:520px;margin:0 auto 28px}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--faint);font-size:14px}
+  footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  footer a:hover{color:var(--ink)}
+  .warn-inline{color:var(--amber)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="dot"></span>NetGram</a>
+    <div class="navlinks">
+      <a href="#why">Why</a>
+      <a href="#permissions">Permissions</a>
+      <a href="#mcp">MCP</a>
+      <a href="#start">Quick start</a>
+      <a class="btn" href="https://github.com/dm1tryG/netgram" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="pill"><span class="g"></span> Self-hosted · single-user · MIT</span>
+    <h1>The Telegram MCP that<br><span class="hl">doesn't YOLO your account.</span></h1>
+    <p class="lede">Give an AI agent <b>scoped, permissioned</b> access to your Telegram — you decide, per chat, what it may read and write. <b>Every outgoing message or button click needs your approval</b> before it hits Telegram.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/dm1tryG/netgram" rel="noopener">Get it on GitHub</a>
+      <a class="btn" href="#start">Quick start</a>
+      <span class="ghline">git clone dm1tryG/netgram</span>
+    </div>
+
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i><span>~/netgram — docker compose up</span></div>
+<pre><span class="c-com"># self-hosted, your own Telegram API creds, state in ./data</span>
+<span class="c-cmd">$</span> docker compose up -d --build
+<span class="c-ok">✓</span> netgram running on <span class="c-cmd">http://localhost:3000</span>
+
+<span class="c-com"># the AI asks to read a chat it wasn't allowed:</span>
+<span class="c-cmd">agent&gt;</span> read_messages(chat=<span class="c-key">"Family"</span>)
+<span class="c-warn">✗ 403</span> not in allowlist — <span class="c-com">request never reached Telegram</span>
+
+<span class="c-com"># the AI drafts a reply in a write-allowed chat:</span>
+<span class="c-cmd">agent&gt;</span> propose_message(chat=<span class="c-key">"Leads"</span>, text=<span class="c-key">"…"</span>)
+<span class="c-ok">✓</span> queued as draft #7 — <span class="c-com">you approve it in /drafts</span></pre>
+    </div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="wrap">
+    <p class="eyebrow">The opposite bet</p>
+    <h2>Least-privilege by default</h2>
+    <p class="sub">Most Telegram MCP servers log in as a userbot and hand the AI full access to everything — all your DMs, groups and channels, with send rights. NetGram flips it.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>&nbsp;</th><th>Typical Telegram MCP</th><th class="ng">NetGram</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Reads your chats</td><td class="typ">all, always</td><td class="ng">only chats you allow</td></tr>
+          <tr><td class="feat">Sends messages</td><td class="typ">immediately, silently</td><td class="ng">queued as a draft you approve</td></tr>
+          <tr><td class="feat">Per-chat permissions</td><td class="typ"><span class="no">✗</span></td><td class="ng"><span class="yes">✓</span> off / read / write / full</td></tr>
+          <tr><td class="feat">Web UI to manage access</td><td class="typ"><span class="no">✗</span></td><td class="ng"><span class="yes">✓</span></td></tr>
+          <tr><td class="feat">Your own Telegram API creds</td><td class="typ">usually shared</td><td class="ng"><span class="yes">✓</span> yours, never shared</td></tr>
+          <tr><td class="feat">Autonomous mode when you want it</td><td class="typ">all-or-nothing</td><td class="ng"><span class="yes">✓</span> opt-in per chat</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="permissions">
+  <div class="wrap">
+    <p class="eyebrow">Permission model</p>
+    <h2>One dial per chat</h2>
+    <p class="sub">An escalating level you set yourself in the web UI — <code>full ⊃ write ⊃ read</code>. Enforced server-side: a request outside the allowlist never reaches Telegram.</p>
+    <div class="ladder">
+      <div class="lvl off"><span class="tag">off</span><p>Nothing. The server rejects every read and write for this chat.</p></div>
+      <div class="lvl read"><span class="tag">read</span><p>The AI can <b>read</b> that chat's messages — including inline buttons.</p></div>
+      <div class="lvl write"><span class="tag">write</span><p>The AI can <b>propose</b> messages and clicks. Each one waits as a draft until <b>you approve it</b> in /drafts.</p></div>
+      <div class="lvl full"><span class="tag">full</span><p>Your explicit opt-in to autonomy — proposals execute immediately, no approval. <span class="warn-inline">Grant only if you mean it.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="mcp">
+  <div class="wrap">
+    <p class="eyebrow">Model Context Protocol</p>
+    <h2>Drive it from your AI</h2>
+    <p class="sub">Ships an MCP server so any client — Claude Desktop, Claude Code, Cursor, Cline — can use it. The tools are deliberately <b>read + propose only</b>.</p>
+    <div class="tools">
+      <div class="tool"><code>list_chats</code><span>list dialogs with access level + kind; filter by kind/title</span></div>
+      <div class="tool"><code>read_messages</code><span>recent messages of a <b>read</b>-allowed chat (incl. inline buttons)</span></div>
+      <div class="tool"><code>propose_message</code><span>queue a text message as a draft (needs <b>write</b>)</span></div>
+      <div class="tool"><code>propose_button_click</code><span>queue an inline-button click as a draft (needs <b>write</b>)</span></div>
+      <div class="tool"><code>list_drafts</code><span>list pending / sent drafts</span></div>
+    </div>
+    <div class="note"><b>Absent by design:</b> there is no tool to grant permissions or to approve/send a draft. Those are human-only, in the web UI. The worst an AI can do is read chats you allowed and pile up drafts you can ignore.</div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>A thin, safe bridge</h2>
+    <p class="sub">GramJS logs in with <i>your</i> account over MTProto. The allowlist gate and draft approval sit between the AI and Telegram.</p>
+    <div class="diagram">
+<pre>AI (MCP client)  ──stdio──▶  <span class="hi">mcp/server.mjs</span>  ──HTTP──▶  <span class="hi">NetGram (Next.js)</span>
+                                                       │  allowlist gate (per chat)
+you (browser)  ─────────────────────────────────────▶ │  drafts + approval
+                                                       └─ <span class="g">GramJS / MTProto</span> ─▶ Telegram</pre>
+    </div>
+    <div class="grid" style="margin-top:24px">
+      <div class="card"><div class="ic">🔒</div><h3>Server-side gate</h3><p>The allowlist is enforced in the API, not the client — the agent physically can't reach a chat you didn't allow.</p></div>
+      <div class="card"><div class="ic">✍️</div><h3>Human-in-the-loop</h3><p>Anything that leaves your account is a draft. The confirm dialog even defaults to <i>Cancel</i>.</p></div>
+      <div class="card"><div class="ic">🏠</div><h3>Local-first state</h3><p>Creds, session, allowlist and drafts live in <code>./data</code> — git-ignored, nothing shared with a third party.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <p class="eyebrow">Quick start</p>
+    <h2>Running in one command</h2>
+    <p class="sub">Docker, your own <code>api_id</code> / <code>api_hash</code> from my.telegram.org, and a setup screen — nothing to edit in files.</p>
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i><span>bash</span></div>
+<pre><span class="c-cmd">$</span> git clone https://github.com/dm1tryG/netgram.git
+<span class="c-cmd">$</span> cd netgram
+<span class="c-cmd">$</span> docker compose up -d --build
+
+<span class="c-com"># then open http://localhost:3000</span>
+<span class="c-com"># 1. paste your api_id / api_hash + phone, enter the login code</span>
+<span class="c-com"># 2. open /permissions and switch on the chats the AI may touch</span></pre>
+    </div>
+
+    <div class="band">
+      <h2>Read your chats. Propose actions.<br>You press send.</h2>
+      <p>Self-hosted, single-user, MIT-licensed. An agent gets a narrow capability — not the keys to your account.</p>
+      <a class="btn btn-primary" href="https://github.com/dm1tryG/netgram" rel="noopener">Star it on GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="brand"><span class="dot"></span>NetGram</span>
+    <span>MTProto userbot — a ToS gray area; use a secondary account if that worries you.</span>
+    <a href="https://github.com/dm1tryG/netgram" rel="noopener">github.com/dm1tryG/netgram</a>
+  </div>
+</footer>
+
+</body>
+</html>
