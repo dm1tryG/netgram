@@ -1,21 +1,28 @@
-# dependencies / build output
 node_modules/
+.session
+*.session
+.env
+.env.*
+
+# next.js
 /.next/
 /out/
 next-env.d.ts
 *.tsbuildinfo
 
-# secrets & runtime state — NEVER commit
-.env
-.env.*
-!.env.example
-/data/*
-!/data/.gitkeep
-.session
-*.session
+# local personal data (Telegram app creds, session, chat allowlist, drafts)
+/data/config.json
+/data/session
+/data/allowlist.json
+/data/drafts.json
 
-# logs / misc
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 .DS_Store
+
+# runtime endpoint handshake (contains local API token)
+/data/endpoint.json
+
+# desktop (Electron) build artifacts
+/desktop/node_modules/
+/desktop/dist/
+/desktop/cli-dist/
+/desktop/server-dist/

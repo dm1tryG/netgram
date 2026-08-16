@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
 type Step = "sending" | "code" | "2fa" | "done" | "error";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { t } = useI18n();
   const sentOnce = useRef(false);
   const [step, setStep] = useState<Step>("sending");
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +20,7 @@ export default function LoginForm() {
     if (sentOnce.current) return;
     sentOnce.current = true;
     sendCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function sendCode() {
@@ -28,7 +31,7 @@ export default function LoginForm() {
       setStep("code");
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Не удалось отправить код");
+      setError(data.error ?? t("login.err.sendCode"));
       setStep("error");
     }
   }
@@ -45,7 +48,7 @@ export default function LoginForm() {
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) {
-      setError(data.error ?? "Неверный код");
+      setError(data.error ?? t("login.err.badCode"));
       return;
     }
     if (data.need2FA) {
@@ -68,7 +71,7 @@ export default function LoginForm() {
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) {
-      setError(data.error ?? "Неверный пароль");
+      setError(data.error ?? t("login.err.badPassword"));
       return;
     }
     setStep("done");
@@ -77,10 +80,10 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-sm space-y-4">
-      <h1 className="text-xl font-semibold">NetGram — вход</h1>
+      <h1 className="text-xl font-semibold">{t("login.title")}</h1>
 
       {step === "sending" && (
-        <p className="text-neutral-500">Отправляю код в Telegram...</p>
+        <p className="text-neutral-500">{t("login.sending")}</p>
       )}
 
       {step === "error" && (
@@ -93,56 +96,56 @@ export default function LoginForm() {
             }}
             className="rounded bg-neutral-100 px-3 py-1.5 text-sm text-neutral-900 hover:bg-neutral-200"
           >
-            Повторить отправку кода
+            {t("login.retry")}
           </button>
         </div>
       )}
 
       {step === "code" && (
         <form onSubmit={submitCode} className="space-y-3">
-          <p className="text-neutral-500">Код отправлен в Telegram.</p>
+          <p className="text-neutral-500">{t("login.codeSent")}</p>
           <input
             autoFocus
             inputMode="numeric"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Код из Telegram"
+            placeholder={t("login.codePlaceholder")}
             className="w-full rounded border border-neutral-300 bg-white px-3 py-2"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={busy || !code}
-            className="w-full rounded bg-blue-600 px-3 py-2 font-medium disabled:opacity-50"
+            className="w-full rounded bg-blue-600 px-3 py-2 font-medium text-white disabled:opacity-50"
           >
-            {busy ? "Проверяю..." : "Войти"}
+            {busy ? t("login.checking") : t("login.signin")}
           </button>
         </form>
       )}
 
       {step === "2fa" && (
         <form onSubmit={submit2FA} className="space-y-3">
-          <p className="text-neutral-500">Включена 2FA — введи пароль.</p>
+          <p className="text-neutral-500">{t("login.twofaHint")}</p>
           <input
             autoFocus
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="2FA пароль"
+            placeholder={t("login.twofaPlaceholder")}
             className="w-full rounded border border-neutral-300 bg-white px-3 py-2"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={busy || !password}
-            className="w-full rounded bg-blue-600 px-3 py-2 font-medium disabled:opacity-50"
+            className="w-full rounded bg-blue-600 px-3 py-2 font-medium text-white disabled:opacity-50"
           >
-            {busy ? "Проверяю..." : "Подтвердить"}
+            {busy ? t("login.checking") : t("login.confirm")}
           </button>
         </form>
       )}
 
-      {step === "done" && <p className="text-neutral-500">Готово, переходим...</p>}
+      {step === "done" && <p className="text-neutral-500">{t("login.done")}</p>}
     </div>
   );
 }

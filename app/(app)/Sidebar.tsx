@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Users,
   MessageSquare,
+  Plug,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -114,8 +115,27 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* Setup lives at the bottom, away from the day-to-day nav: you connect
+          an agent once and then never touch this again. */}
+      <div className="mt-auto p-2">
+        <Link
+          href="/connect"
+          title={collapsed ? t("nav.connect") : undefined}
+          className={`flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
+            collapsed ? "justify-center" : ""
+          } ${
+            pathname === "/connect"
+              ? "bg-neutral-200 font-medium text-neutral-900"
+              : "text-neutral-600 hover:bg-neutral-100"
+          }`}
+        >
+          <Plug className="h-5 w-5 shrink-0" />
+          {!collapsed && <span className="truncate">{t("nav.connect")}</span>}
+        </Link>
+      </div>
+
       {/* User + language pinned to the bottom; language sits just above the name. */}
-      <div className="mt-auto border-t border-neutral-200 p-3">
+      <div className="border-t border-neutral-200 p-3">
         {collapsed ? (
           <div className="flex flex-col items-center gap-3">
             <button

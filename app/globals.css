@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+/*
+ * NetGram dark theme (app-icon palette: amber on dark navy).
+ * Components use the stock Tailwind names (white / neutral-* / sky / blue),
+ * so instead of touching every component we remap the tokens themselves:
+ *   - "white" is the surface color (cards, inputs) — dark navy
+ *   - the neutral scale is inverted (50 = darkest surface, 900 = main text)
+ *   - sky / blue / indigo accents become amber
+ */
+@theme {
+  --color-white: #16213a; /* surfaces: cards, inputs; also text-white on amber buttons -> dark */
+  --color-neutral-50: #121a2e; /* sidebar / panel background */
+  --color-neutral-100: #1c2946; /* hovers, secondary buttons */
+  --color-neutral-200: #263756; /* borders, dividers */
+  --color-neutral-300: #34486e; /* input borders */
+  --color-neutral-400: #6b7c9e; /* faint text */
+  --color-neutral-500: #93a5c6; /* muted text */
+  --color-neutral-600: #b4c2dc;
+  --color-neutral-700: #cbd6ea;
+  --color-neutral-800: #e2e9f6; /* "dark" buttons become light */
+  --color-neutral-900: #f1f5fc; /* main text */
+
+  --color-sky-100: #3a2e0e; /* focus ring glow */
+  --color-sky-400: #f59e0b; /* focus borders */
+  --color-sky-600: #ffc93d; /* links */
+  --color-blue-600: #f59e0b; /* primary buttons */
+  --color-indigo-500: #f59e0b; /* primary gradient end */
+  --color-red-600: #f87171; /* errors, readable on dark */
+}
+
+body {
+  background: linear-gradient(145deg, #1e2a4a 0%, #0c1220 100%) fixed;
+}

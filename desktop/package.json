@@ -1,0 +1,49 @@
+{
+  "name": "netgram-desktop",
+  "version": "1.0.0",
+  "description": "NetGram menubar app — scoped, permissioned Telegram access for AI agents.",
+  "main": "main.js",
+  "author": "Dmitrii Galkin",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "prepare-resources": "bash scripts/prepare.sh",
+    "dist": "bash scripts/prepare.sh && electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^38.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.dmitriigalkin.netgram",
+    "productName": "NetGram",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "build/trayTemplate*.png"
+    ],
+    "extraResources": [
+      { "from": "cli-dist/netgram", "to": "netgram" }
+    ],
+    "afterPack": "scripts/afterPack.js",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [{ "target": "pkg", "arch": ["arm64"] }],
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "binaries": ["Contents/Resources/netgram"]
+    },
+    "pkg": {
+      "scripts": "pkg-scripts",
+      "installLocation": "/Applications",
+      "allowAnywhere": false,
+      "allowCurrentUserHome": false,
+      "isRelocatable": false
+    }
+  }
+}

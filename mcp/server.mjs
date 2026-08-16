@@ -9,13 +9,38 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
-const BASE = process.env.NETGRAM_BASE_URL || "http://localhost:3000";
+// Server discovery: explicit env wins; otherwise look for endpoint.json
+// written by a running NetGram instance (desktop app → Application Support,
+// docker/dev → ./data). Falls back to localhost:3000.
+function discover() {
+  if (process.env.NETGRAM_BASE_URL) {
+    return { base: process.env.NETGRAM_BASE_URL, token: process.env.NETGRAM_AUTH_TOKEN || null };
+  }
+  const dirs = [
+    process.env.NETGRAM_DATA_DIR,
+    path.join(os.homedir(), "Library", "Application Support", "NetGram"),
+    path.join(process.cwd(), "data"),
+  ].filter(Boolean);
+  for (const dir of dirs) {
+    try {
+      const e = JSON.parse(fs.readFileSync(path.join(dir, "endpoint.json"), "utf-8"));
+      if (e?.port) return { base: `http://127.0.0.1:${e.port}`, token: e.token ?? null };
+    } catch {}
+  }
+  return { base: "http://localhost:3000", token: null };
+}
+const { base: BASE, token: TOKEN } = discover();
 
 async function api(path, init) {
   let res;
   try {
-    res = await fetch(`${BASE}${path}`, init);
+    const headers = { ...(init?.headers || {}) };
+    if (TOKEN) headers["x-netgram-token"] = TOKEN;
+    res = await fetch(`${BASE}${path}`, { ...init, headers });
   } catch (e) {
     return { ok: false, status: 0, data: { error: `cannot reach NetGram at ${BASE} (${e.message})` } };
   }

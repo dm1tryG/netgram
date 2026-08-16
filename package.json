@@ -8,7 +8,14 @@
     "build": "next build",
     "start": "next start"
   },
-  "keywords": ["telegram", "mcp", "model-context-protocol", "ai-agent", "claude", "gramjs"],
+  "keywords": [
+    "telegram",
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "claude",
+    "gramjs"
+  ],
   "author": "Dmitrii Galkin",
   "license": "MIT",
   "type": "module",

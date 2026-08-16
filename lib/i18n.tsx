@@ -4,14 +4,29 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 export type Locale = "ru" | "en";
 
-const STORAGE_KEY = "netgram_locale";
+export const LOCALE_STORAGE_KEY = "netgram_locale";
+const STORAGE_KEY = LOCALE_STORAGE_KEY;
 
 const DICT: Record<Locale, Record<string, string>> = {
   ru: {
     "nav.permissions": "Разрешения",
     "nav.drafts": "Черновики",
+    "nav.connect": "Подключить MCP",
     "user.loading": "Загрузка...",
     "lang.label": "Язык",
+
+    "connect.title": "Подключить MCP",
+    "connect.desc":
+      "NetGram сам отдаёт MCP-сервер по HTTP. Добавь его в Claude Code, Claude Desktop или Cursor — ставить ничего не нужно.",
+    "connect.cli": "Claude Code (терминал)",
+    "connect.json": "Claude Desktop / Cursor — файл конфига",
+    "connect.copy": "Скопировать",
+    "connect.copied": "Скопировано",
+    "connect.noToken":
+      "Токен не задан — порт открыт без авторизации. Так бывает в dev или Docker; в приложении для Mac токен есть всегда.",
+    "connect.tools": "Что получает агент",
+    "connect.safety":
+      "Через MCP нельзя выдать себе доступ или подтвердить черновик — это только вручную здесь. Отправка сразу происходит лишь в чатах с уровнем «Полный».",
 
     "permissions.title": "Разрешения",
     "permissions.desc":
@@ -71,12 +86,60 @@ const DICT: Record<Locale, Record<string, string>> = {
     "err.draft_not_found": "Черновик не найден.",
     "err.invalid_click_draft": "Клик-черновик повреждён.",
     "err.default": "Не удалось выполнить.",
+
+    "setup.title": "NetGram — настройка",
+    "setup.desc":
+      "NetGram работает с твоим собственным Telegram-приложением. Это одноразовый шаг — данные сохранятся локально.",
+    "setup.step1.pre": "1. Открой",
+    "setup.step1.post": "и войди.",
+    "setup.step2": "2. Create application (любые название/платформа).",
+    "setup.step3.pre": "3. Скопируй оттуда",
+    "setup.step3.post": "→ вставь ниже.",
+    "setup.phone": "Телефон (с кодом страны)",
+    "setup.saving": "Сохраняю...",
+    "setup.continue": "Продолжить → вход",
+    "setup.localNote.pre": "Данные хранятся только у тебя (",
+    "setup.localNote.post": "), в облако ничего не уходит.",
+    "setup.err.bad_api_id": "api_id — это число из my.telegram.org.",
+    "setup.err.bad_api_hash":
+      "api_hash — это 32 символа (hex). Проверь, что скопировал целиком.",
+    "setup.err.bad_phone": "Телефон в формате +99955... (с кодом страны).",
+    "setup.err.default": "Не удалось сохранить. Проверь поля.",
+
+    "login.title": "NetGram — вход",
+    "login.sending": "Отправляю код в Telegram...",
+    "login.retry": "Повторить отправку кода",
+    "login.codeSent": "Код отправлен в Telegram.",
+    "login.codePlaceholder": "Код из Telegram",
+    "login.signin": "Войти",
+    "login.checking": "Проверяю...",
+    "login.twofaHint": "Включена 2FA — введи пароль.",
+    "login.twofaPlaceholder": "2FA пароль",
+    "login.confirm": "Подтвердить",
+    "login.done": "Готово, переходим...",
+    "login.err.sendCode": "Не удалось отправить код",
+    "login.err.badCode": "Неверный код",
+    "login.err.badPassword": "Неверный пароль",
   },
   en: {
     "nav.permissions": "Permissions",
     "nav.drafts": "Drafts",
+    "nav.connect": "Connect MCP",
     "user.loading": "Loading...",
     "lang.label": "Language",
+
+    "connect.title": "Connect MCP",
+    "connect.desc":
+      "NetGram serves its own MCP server over HTTP. Add it to Claude Code, Claude Desktop or Cursor — there is nothing to install.",
+    "connect.cli": "Claude Code (terminal)",
+    "connect.json": "Claude Desktop / Cursor — config file",
+    "connect.copy": "Copy",
+    "connect.copied": "Copied",
+    "connect.noToken":
+      "No token is set — the port is open without auth. That happens in dev or Docker; the Mac app always sets one.",
+    "connect.tools": "What the agent gets",
+    "connect.safety":
+      "Over MCP nothing can grant itself access or approve a draft — that stays manual, here. Sending happens immediately only in chats set to “Full”.",
 
     "permissions.title": "Permissions",
     "permissions.desc":
@@ -136,6 +199,40 @@ const DICT: Record<Locale, Record<string, string>> = {
     "err.draft_not_found": "Draft not found.",
     "err.invalid_click_draft": "Click draft is corrupted.",
     "err.default": "Action failed.",
+
+    "setup.title": "NetGram — setup",
+    "setup.desc":
+      "NetGram uses your own Telegram application. This is a one-time step — everything is stored locally.",
+    "setup.step1.pre": "1. Open",
+    "setup.step1.post": "and sign in.",
+    "setup.step2": "2. Create application (any name/platform).",
+    "setup.step3.pre": "3. Copy the",
+    "setup.step3.post": "→ paste them below.",
+    "setup.phone": "Phone (with country code)",
+    "setup.saving": "Saving...",
+    "setup.continue": "Continue → sign in",
+    "setup.localNote.pre": "Your data stays on this machine (",
+    "setup.localNote.post": "), nothing goes to any cloud.",
+    "setup.err.bad_api_id": "api_id is the number from my.telegram.org.",
+    "setup.err.bad_api_hash":
+      "api_hash is 32 hex characters. Make sure you copied all of it.",
+    "setup.err.bad_phone": "Phone must look like +99955... (with country code).",
+    "setup.err.default": "Could not save. Check the fields.",
+
+    "login.title": "NetGram — sign in",
+    "login.sending": "Sending the code to Telegram...",
+    "login.retry": "Resend code",
+    "login.codeSent": "Code sent to Telegram.",
+    "login.codePlaceholder": "Code from Telegram",
+    "login.signin": "Sign in",
+    "login.checking": "Checking...",
+    "login.twofaHint": "2FA is on — enter your password.",
+    "login.twofaPlaceholder": "2FA password",
+    "login.confirm": "Confirm",
+    "login.done": "Done, redirecting...",
+    "login.err.sendCode": "Could not send the code",
+    "login.err.badCode": "Wrong code",
+    "login.err.badPassword": "Wrong password",
   },
 };
 
