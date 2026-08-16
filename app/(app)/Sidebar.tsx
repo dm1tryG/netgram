@@ -10,7 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useI18n, type Locale } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
 type Me = {
   id: string;
@@ -25,14 +25,9 @@ const NAV = [
   { href: "/drafts", key: "nav.drafts", Icon: MessageSquare },
 ];
 
-const LANGS: { code: Locale; label: string }[] = [
-  { code: "ru", label: "RU" },
-  { code: "en", label: "EN" },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -134,17 +129,10 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* User + language pinned to the bottom; language sits just above the name. */}
+      {/* User pinned to the bottom. */}
       <div className="border-t border-neutral-200 p-3">
         {collapsed ? (
           <div className="flex flex-col items-center gap-3">
-            <button
-              onClick={() => setLocale(locale === "ru" ? "en" : "ru")}
-              title={t("lang.label")}
-              className="rounded-full border border-neutral-200 bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-            >
-              {locale.toUpperCase()}
-            </button>
             <div
               title={fullName}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-xs font-semibold text-white"
@@ -154,22 +142,6 @@ export default function Sidebar() {
           </div>
         ) : (
           <>
-            <div className="mb-3 flex overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 p-0.5 text-xs font-medium">
-              {LANGS.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => setLocale(l.code)}
-                  className={`flex-1 rounded-full px-3 py-1 transition-colors ${
-                    locale === l.code
-                      ? "bg-neutral-800 text-white shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-800"
-                  }`}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
-
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-xs font-semibold text-white">
                 {initials || "··"}

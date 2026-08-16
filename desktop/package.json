@@ -28,17 +28,11 @@
     "afterPack": "scripts/afterPack.js",
     "mac": {
       "category": "public.app-category.developer-tools",
-      "target": [{ "target": "pkg", "arch": ["arm64"] }],
+      "target": [{ "target": "zip", "arch": ["arm64"] }],
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
-    },
-    "pkg": {
-      "installLocation": "/Applications",
-      "allowAnywhere": false,
-      "allowCurrentUserHome": false,
-      "isRelocatable": false
     }
   }
 }
