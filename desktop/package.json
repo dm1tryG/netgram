@@ -1,6 +1,6 @@
 {
   "name": "netgram-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NetGram menubar app — scoped, permissioned Telegram access for AI agents.",
   "main": "main.js",
   "author": "Dmitrii Galkin",
@@ -32,7 +32,8 @@
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
     }
   }
 }
