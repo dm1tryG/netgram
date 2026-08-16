@@ -48,8 +48,8 @@ export function isWriteAllowed(chatId: string): boolean {
   return getPermission(chatId).write;
 }
 
-// "full" = AI may act autonomously via the CLI (send/click execute immediately,
-// with no manual Drafts approval). Always implies write, which implies read.
+// "full" = AI may act autonomously (send/click execute immediately, with no
+// manual Drafts approval). Always implies write, which implies read.
 export function isFullAllowed(chatId: string): boolean {
   return getPermission(chatId).full;
 }

@@ -1,5 +1,5 @@
 // The agent-facing tool surface, defined once and shared by every transport
-// (today: the MCP route at /api/mcp; the CLI still talks plain HTTP).
+// (the MCP route at /api/mcp; the stdio server in mcp/ proxies the HTTP API).
 //
 // Same contract as the web API it sits next to: READ and PROPOSE only. Nothing
 // here can grant permissions or approve a draft — those stay human-only in the

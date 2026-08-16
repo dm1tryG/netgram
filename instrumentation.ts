@@ -1,6 +1,6 @@
 // Runs once on server boot (Next.js instrumentation hook). Publishes where the
 // server actually listens — port + auth token — to endpoint.json in the data
-// dir, so the CLI and MCP server can discover a desktop-managed instance
+// dir, so the stdio MCP server can discover a desktop-managed instance
 // without hardcoding localhost:3000.
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;

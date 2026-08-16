@@ -30,7 +30,7 @@ const DICT: Record<Locale, Record<string, string>> = {
 
     "permissions.title": "Разрешения",
     "permissions.desc":
-      "Чтение — AI видит сообщения. Запись — AI предлагает черновики (подтверждаешь вручную). Полный — AI действует сам через CLI без подтверждения.",
+      "Чтение — AI видит сообщения. Запись — AI предлагает черновики (подтверждаешь вручную). Полный — AI действует сам, без подтверждения.",
     "permissions.search": "Поиск по названию чата или канала...",
     "permissions.refresh": "↻ Обновить",
     "permissions.refreshing": "Обновляю…",
@@ -52,12 +52,12 @@ const DICT: Record<Locale, Record<string, string>> = {
     "level.write.tip":
       "AI предлагает сообщения и клики по кнопкам — ты подтверждаешь их вручную в разделе «Черновики».",
     "level.full.tip":
-      "Полный доступ: AI действует сам через CLI без подтверждения — отправляет и кликает сразу. Используй осторожно.",
+      "Полный доступ: AI действует сам, без подтверждения — отправляет и кликает сразу. Используй осторожно.",
 
     "drafts.title": "Черновики",
     "drafts.desc":
-      "Действия, предложенные через CLI: сообщения (netgram draft) и клики по кнопкам (netgram click). Выполняются в Telegram только отсюда — вручную.",
-    "drafts.empty.pre": "Черновиков нет. Создай через",
+      "Действия, предложенные AI: сообщения и клики по кнопкам. Выполняются в Telegram только отсюда — вручную.",
+    "drafts.empty.pre": "Черновиков нет. AI создаёт их через",
     "drafts.empty.or": "или",
     "drafts.loading": "Загружаю черновики...",
     "drafts.error": "Не удалось загрузить черновики",
@@ -143,7 +143,7 @@ const DICT: Record<Locale, Record<string, string>> = {
 
     "permissions.title": "Permissions",
     "permissions.desc":
-      "Read — AI sees messages. Write — AI proposes drafts (you approve manually). Full — AI acts on its own via the CLI with no approval.",
+      "Read — AI sees messages. Write — AI proposes drafts (you approve manually). Full — AI acts on its own, with no approval.",
     "permissions.search": "Search chats and channels by name...",
     "permissions.refresh": "↻ Refresh",
     "permissions.refreshing": "Refreshing…",
@@ -165,12 +165,12 @@ const DICT: Record<Locale, Record<string, string>> = {
     "level.write.tip":
       "AI proposes messages and button clicks — you approve them manually in Drafts.",
     "level.full.tip":
-      "Full access: AI acts on its own via the CLI with no approval — sends and clicks instantly. Use with care.",
+      "Full access: AI acts on its own, with no approval — sends and clicks instantly. Use with care.",
 
     "drafts.title": "Drafts",
     "drafts.desc":
-      "Actions proposed via CLI: messages (netgram draft) and button clicks (netgram click). They run in Telegram only from here — manually.",
-    "drafts.empty.pre": "No drafts. Create one with",
+      "Actions proposed by the AI: messages and button clicks. They run in Telegram only from here — manually.",
+    "drafts.empty.pre": "No drafts. The AI creates them with",
     "drafts.empty.or": "or",
     "drafts.loading": "Loading drafts...",
     "drafts.error": "Failed to load drafts",

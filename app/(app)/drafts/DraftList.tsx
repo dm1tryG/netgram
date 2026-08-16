@@ -91,8 +91,8 @@ export default function DraftList() {
         <p className="text-neutral-500">{t("drafts.loading")}</p>
       ) : drafts.length === 0 ? (
         <p className="text-sm text-neutral-500">
-          {t("drafts.empty.pre")} <code>netgram draft</code> {t("drafts.empty.or")}{" "}
-          <code>netgram click</code>.
+          {t("drafts.empty.pre")} <code>propose_message</code>{" "}
+          {t("drafts.empty.or")} <code>propose_button_click</code>.
         </p>
       ) : (
         <ul className="space-y-3">

@@ -25,9 +25,6 @@
       "main.js",
       "build/trayTemplate*.png"
     ],
-    "extraResources": [
-      { "from": "cli-dist/netgram", "to": "netgram" }
-    ],
     "afterPack": "scripts/afterPack.js",
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -35,11 +32,9 @@
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
-      "binaries": ["Contents/Resources/netgram"]
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "pkg": {
-      "scripts": "pkg-scripts",
       "installLocation": "/Applications",
       "allowAnywhere": false,
       "allowCurrentUserHome": false,

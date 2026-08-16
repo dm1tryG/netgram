@@ -24,5 +24,4 @@ next-env.d.ts
 # desktop (Electron) build artifacts
 /desktop/node_modules/
 /desktop/dist/
-/desktop/cli-dist/
 /desktop/server-dist/

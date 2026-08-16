@@ -5,7 +5,7 @@
 //   - injects x-netgram-token into all requests from the app window
 //   - tray menu: open UI / permissions / drafts / quit
 // State lives in ~/Library/Application Support/NetGram (userData); the server
-// writes endpoint.json there so the CLI and MCP server can find us.
+// writes endpoint.json there so the MCP server can find us.
 const { app, BrowserWindow, Tray, Menu, session, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const crypto = require("node:crypto");
@@ -232,8 +232,8 @@ if (!gotLock) {
   app.on("before-quit", () => {
     app.isQuitting = true;
     if (child) child.kill();
-    // Remove discovery file so the CLI reports "not running" instead of
-    // hitting a dead port.
+    // Remove discovery file so the MCP server reports "not running" instead
+    // of hitting a dead port.
     try {
       fs.unlinkSync(path.join(app.getPath("userData"), "endpoint.json"));
     } catch {}
