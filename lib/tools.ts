@@ -13,7 +13,9 @@ import {
   getMessageById,
   isAuthorized,
   sendChatMessage,
+  type DialogKind,
 } from "./telegram";
+import { ChatNotAllowedError, searchMessages } from "./search";
 import {
   getAllowlist,
   isFullAllowed,
@@ -101,6 +103,80 @@ export const TOOLS: Tool[] = [
         );
       }
       return getChatMessages(id, typeof limit === "number" ? limit : 20);
+    },
+  },
+
+  {
+    name: "search_messages",
+    title: "Search messages",
+    description:
+      "Search messages by keyword across every chat the human granted 'read' access to — chats set to 'off' are never searched and never appear in the results. Returns the matching messages with the chat they came from; long texts are trimmed, so use read_messages on a hit to see full context. Pass chat_id to search inside a single chat instead.",
+    inputSchema: {
+      query: z.string().min(1).describe("keyword or phrase to look for"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .optional()
+        .describe("how many matches to return (default 20)"),
+      chat_id: z
+        .string()
+        .optional()
+        .describe("restrict the search to one chat id from list_chats"),
+      kind: z
+        .enum(["user", "bot", "group", "channel"])
+        .optional()
+        .describe("only search chats of this kind"),
+      since: z
+        .string()
+        .optional()
+        .describe("ISO date, e.g. 2026-08-01 — only messages sent on or after it"),
+      until: z
+        .string()
+        .optional()
+        .describe("ISO date — only messages sent before it"),
+    },
+    async run({ query, limit, chat_id, kind, since, until }) {
+      await assertAuthorized();
+      const q = String(query ?? "").trim();
+      if (!q) throw new ToolError("query is empty");
+
+      const toEpoch = (value: unknown, label: string): number | undefined => {
+        if (value == null) return undefined;
+        const ms = Date.parse(String(value));
+        if (Number.isNaN(ms)) {
+          throw new ToolError(
+            `${label} is not a date I can read: ${String(value)}. Use ISO, e.g. 2026-08-01.`
+          );
+        }
+        return Math.floor(ms / 1000);
+      };
+
+      try {
+        const result = await searchMessages({
+          query: q,
+          limit: typeof limit === "number" ? limit : 20,
+          chatId: chat_id ? String(chat_id) : undefined,
+          kind: kind as DialogKind | undefined,
+          minDate: toEpoch(since, "since"),
+          maxDate: toEpoch(until, "until"),
+        });
+        if (result.hits.length === 0) {
+          return {
+            ...result,
+            note: "No matches in the allowed chats. Either nothing matches, or the chats that hold it are still set to 'off' — list_chats shows which are readable.",
+          };
+        }
+        return result;
+      } catch (e) {
+        if (e instanceof ChatNotAllowedError) {
+          throw new ToolError(
+            `Chat ${e.message} is not read-allowed. Ask the human to enable Read on the Permissions page.`
+          );
+        }
+        throw e;
+      }
     },
   },
 

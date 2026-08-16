@@ -107,6 +107,41 @@ server.registerTool(
 );
 
 server.registerTool(
+  "search_messages",
+  {
+    title: "Search messages",
+    description:
+      "Search messages by keyword across every chat the human granted 'read' access to — chats set to 'off' are never searched and never appear in the results. Returns matches with the chat they came from; long texts are trimmed, so use read_messages on a hit for full context. Pass chat_id to search inside a single chat.",
+    inputSchema: {
+      query: z.string().min(1).describe("keyword or phrase to look for"),
+      limit: z.number().int().min(1).max(50).optional().describe("how many matches to return (default 20)"),
+      chat_id: z.string().optional().describe("restrict the search to one chat id from list_chats"),
+      kind: z.enum(["user", "bot", "group", "channel"]).optional(),
+      since: z.string().optional().describe("ISO date, e.g. 2026-08-01 — only messages sent on or after it"),
+      until: z.string().optional().describe("ISO date — only messages sent before it"),
+    },
+  },
+  async ({ query, limit, chat_id, kind, since, until }) => {
+    const qs = new URLSearchParams({ q: query });
+    if (limit) qs.set("limit", String(limit));
+    if (chat_id) qs.set("chat_id", chat_id);
+    if (kind) qs.set("kind", kind);
+    if (since) qs.set("since", since);
+    if (until) qs.set("until", until);
+
+    const r = await api(`/api/search?${qs}`);
+    if (r.status === 403)
+      return fail(`Chat ${chat_id} is not read-allowed. Ask the human to enable Read on /permissions.`);
+    if (!r.ok) return fail(`error ${r.status}: ${r.data?.error ?? r.data}`);
+    if (!r.data.hits?.length)
+      return ok(
+        "No matches in the allowed chats. Either nothing matches, or the chats that hold it are still set to 'off' — list_chats shows which are readable."
+      );
+    return ok(r.data);
+  }
+);
+
+server.registerTool(
   "propose_message",
   {
     title: "Propose a message (draft)",

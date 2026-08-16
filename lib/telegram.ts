@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { TelegramClient, Api } from "telegram";
+import { TelegramClient, Api, utils } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { computeCheck } from "telegram/Password";
 import { DATA_DIR } from "./paths";
@@ -300,6 +300,111 @@ export async function getChatMessages(
     fromId: peerToId(m.fromId),
     buttons: parseButtons(m.replyMarkup),
   }));
+}
+
+// One message found by a search, tagged with the chat it came from. Buttons are
+// deliberately omitted — a hit is a pointer; read_messages gives the full view.
+export type MessageHit = {
+  chatId: string;
+  id: number;
+  date: number;
+  text: string;
+  fromId: string | null;
+};
+
+export type SearchKind = "user" | "bot" | "group" | "channel";
+
+export type GlobalSearchOffset = {
+  rate: number;
+  chatId: string;
+  messageId: number;
+};
+
+export type GlobalSearchPage = {
+  hits: MessageHit[];
+  // Absent when Telegram has nothing more to give.
+  next?: GlobalSearchOffset;
+};
+
+function toHit(m: Api.Message): MessageHit | null {
+  // Service messages (joins, pins) carry no text and are noise in search.
+  if (m.className !== "Message") return null;
+  return {
+    chatId: utils.getPeerId(m.peerId),
+    id: m.id,
+    date: m.date,
+    text: m.message ?? "",
+    fromId: peerToId(m.fromId),
+  };
+}
+
+// One page of Telegram's cross-chat search. Note what this does NOT do: it has
+// no idea which chats the human allowed, so its output must never reach an
+// agent unfiltered — lib/search.ts is the only intended caller.
+export async function searchGlobalPage(opts: {
+  query: string;
+  limit: number;
+  kind?: SearchKind;
+  minDate?: number; // unix seconds, 0 = unbounded
+  maxDate?: number;
+  offset?: GlobalSearchOffset;
+}): Promise<GlobalSearchPage> {
+  const client = await ensureConnected();
+
+  // Narrowing at the API level beats filtering afterwards: fewer pages wasted
+  // on hits we would throw away. Bots are users as far as Telegram is
+  // concerned, so both map to usersOnly.
+  const kind = opts.kind;
+  const offsetPeer = opts.offset
+    ? await client.getInputEntity(opts.offset.chatId)
+    : new Api.InputPeerEmpty();
+
+  const res = (await client.invoke(
+    new Api.messages.SearchGlobal({
+      q: opts.query,
+      filter: new Api.InputMessagesFilterEmpty(),
+      minDate: opts.minDate ?? 0,
+      maxDate: opts.maxDate ?? 0,
+      offsetRate: opts.offset?.rate ?? 0,
+      offsetPeer,
+      offsetId: opts.offset?.messageId ?? 0,
+      limit: opts.limit,
+      usersOnly: kind === "user" || kind === "bot" ? true : undefined,
+      groupsOnly: kind === "group" ? true : undefined,
+      broadcastsOnly: kind === "channel" ? true : undefined,
+    })
+  )) as unknown as { messages?: Api.Message[]; nextRate?: number };
+
+  const raw = res.messages ?? [];
+  const hits = raw.map(toHit).filter((h): h is MessageHit => h !== null);
+
+  // Paging needs all three: Telegram's rate cursor plus the last message's
+  // (peer, id). No nextRate means this was the final page.
+  const last = raw[raw.length - 1];
+  const next =
+    res.nextRate != null && last
+      ? {
+          rate: res.nextRate,
+          chatId: utils.getPeerId(last.peerId),
+          messageId: last.id,
+        }
+      : undefined;
+
+  return { hits, next };
+}
+
+// Search inside a single chat. Cheaper and exhaustive where global search is
+// broad — used when the caller already knows which chat it wants.
+export async function searchChatMessages(
+  chatId: string,
+  query: string,
+  limit: number
+): Promise<MessageHit[]> {
+  const client = await ensureConnected();
+  const messages = await client.getMessages(chatId, { search: query, limit });
+  return messages
+    .map((m) => toHit(m as unknown as Api.Message))
+    .filter((h): h is MessageHit => h !== null);
 }
 
 export async function sendChatMessage(

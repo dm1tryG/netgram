@@ -80,6 +80,7 @@ npm install   # once, for the MCP server's dependencies
 | --- | --- |
 | `list_chats` | list dialogs with access level + kind; filter by kind/title |
 | `read_messages` | recent messages of a **read**-allowed chat (incl. inline buttons) |
+| `search_messages` | keyword search across **read**-allowed chats only; filter by kind/date |
 | `propose_message` | queue a text message as a draft (needs **write**) |
 | `propose_button_click` | queue an inline-button click as a draft (needs **write**) |
 | `list_drafts` | list pending/sent drafts |
@@ -153,6 +154,7 @@ over the wizard.
 | GET | `/api/chats` | all dialogs + `read`/`write`/`full` + `kind`; `?refresh=1` |
 | PATCH | `/api/chats/:id/allow` | `{ level: 'off'\|'read'\|'write'\|'full' }` |
 | GET | `/api/chats/:id/messages` | `?limit=`, 403 without read; includes `buttons` |
+| GET | `/api/search` | `?q=` across read-allowed chats; `chat_id`, `kind`, `since`, `until`, `limit` |
 | GET · POST | `/api/drafts` | list / create (message or `{kind:'click'}`) |
 | POST | `/api/drafts/:id/send` | approve + execute a draft |
 | DELETE | `/api/drafts/:id` | discard a draft |
